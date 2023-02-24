@@ -131,3 +131,30 @@ if __name__ == '__main__':
                 process_single_image(image_name, input_folder, output_folder, hypes)
         duration2 = time.time() - start_time
         print('single-threading takes about %f' % duration2)
+
+def generate():
+    opt = data_parser()
+    yaml_file = opt.hypes_yaml
+    hypes = load_yaml(yaml_file, opt)
+
+    input_folder = hypes['input_folder']
+    output_folder = hypes['output_folder']
+    multi_thread = hypes['multi_thread']
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    image_list_ = [x for x in os.listdir(input_folder) if 'process' not in x]
+    existed_list = [x for x in os.listdir(output_folder) if 'process' not in x]
+
+    if multi_thread:
+        start_time = time.time()
+        multiple_process(image_list_, input_folder, output_folder, hypes)
+        duration1 = time.time() - start_time
+        print('using multi-threading takes about %f' % duration1)
+    else:
+        start_time = time.time()
+        for image_name in image_list_:
+            if image_name not in existed_list:
+                process_single_image(image_name, input_folder, output_folder, hypes)
+        duration2 = time.time() - start_time
+        print('single-threading takes about %f' % duration2)

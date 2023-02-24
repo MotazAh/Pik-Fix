@@ -1,10 +1,10 @@
 name: crack_dense_unet_121
 train_file:
-  - data/pascal_clean_more_val/train
+  - datasets/test_data
 val_file:
-  - data/pascal_clean_more_val/val
+  - datasets/test_data
 test_file:
-  - data/pascal_clean_more_val/val
+  - datasets/test_data
 real_file:
   - data/real_old_resize/
 train_params:
