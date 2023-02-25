@@ -1,5 +1,6 @@
 import os
 
+import cv2
 import torch
 import torch.optim.lr_scheduler as lr_scheduler
 
@@ -89,7 +90,8 @@ def train(opt, hypes, use_gpu=True):
                                                                    batch_data['gt_ab'], batch_data['gt_L'], \
                                                                    batch_data['ref_gray'], batch_data['ref_ab']
             
-            print(ref_ab.shape)
+            print("Writing image")
+            cv2.imwrite(ref_gray, "datasets/ref_img.jpg")
             
             if use_gpu:
                 input_batch = input_batch.cuda()

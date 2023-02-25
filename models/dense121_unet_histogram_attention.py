@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import sys
+import cv2
 
 from torchvision import models as torch_models
 from torchvision.models import resnet34
