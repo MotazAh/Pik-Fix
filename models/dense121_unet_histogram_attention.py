@@ -140,6 +140,18 @@ class WarpNet(nn.Module):
         A_feature5_1 = self.layer5_1(A_relu5_1)
         B_feature5_1 = self.layer5_1(B_relu5_1)
 
+        print("\nFEATURE SCALES TO 44*44:")
+        print("\tARELU2_1- " + str(A_relu2_1.shape))
+        print("\tAFEATURE2_1- " + str(A_feature2_1.shape))
+        print("\tARELU3_1- " + str(A_relu3_1.shape))
+        print("\tAFEATURE3_1- " + str(A_feature3_1.shape))
+        print("\tARELU4_1- " + str(A_relu4_1.shape))
+        print("\tAFEATURE4_1- " + str(A_feature4_1.shape))
+        print("\tARELU5_1- " + str(A_relu5_1.shape))
+        print("\tAFEATURE5_1- " + str(A_feature5_1.shape))
+
+        print("\n")
+
         # concatenate features
         if A_feature5_1.shape[2] != A_feature2_1.shape[2] or A_feature5_1.shape[3] != A_feature2_1.shape[3]:
             A_feature2_1 = padding_customize(A_feature2_1, A_feature5_1)
@@ -154,6 +166,12 @@ class WarpNet(nn.Module):
         A_features = self.layer(torch.cat((A_feature2_1, A_feature3_1, A_feature4_1, A_feature5_1), 1))
         B_features = self.layer(torch.cat((B_feature2_1, B_feature3_1, B_feature4_1, B_feature5_1), 1))
 
+        print("A Features:")
+        print("\t-" + str(A_features.shape))
+        print("B Features:")
+        print("\t-" + str(B_features.shape))
+        print ("\n")
+        
         # pairwise cosine similarity
         theta = self.theta(A_features).view(batch_size, self.inter_channels, -1)  # 2*256*(feature_height*feature_width)
         theta = theta - theta.mean(dim=-1, keepdim=True)  # center the feature
@@ -171,7 +189,10 @@ class WarpNet(nn.Module):
         f_similarity = f.unsqueeze_(dim=1)
         similarity_map = torch.max(f_similarity, -1, keepdim=True)[0]
         similarity_map = similarity_map.view(batch_size, 1, A_feature2_1.shape[2],  A_feature2_1.shape[3])
-
+        
+        print("SIMILARITY MAP:")
+        print("\t-" + str(similarity_map.shape))
+        print ("\n")
         # f can be negative
         f_WTA = f
         f_WTA = f_WTA / temperature
@@ -431,6 +452,10 @@ class Dense121UnetHistogramAttention(nn.Module):
         # normalize data for attention mask
         normalized_ref = self.normalize_data(ref_gray.repeat(1, 3, 1, 1))
         normalized_x = self.normalize_data(x_gray.repeat(1, 3, 1, 1))
+        
+        print("\nNormalized SHAPES:")
+        print(normalized_ref.shape)
+        print(normalized_x.shape)
 
         # attention mask for both input and ground truth(size divide 4, 8, 16, 32)
         ref_attention_masks, ref_res_features = att_model(normalized_ref)
@@ -438,6 +463,8 @@ class Dense121UnetHistogramAttention(nn.Module):
 
         # generate histogram for different size
         ref_resize_by_8 = F.avg_pool2d(ref, 8)
+        print("\Resized SHAPE:")
+        print(ref_resize_by_8.shape)
         x_resize_by_8 = F.avg_pool2d(x, 8)
         ref_hist = self.hist_layer_local(x_resize_by_8, ref_resize_by_8)
 
