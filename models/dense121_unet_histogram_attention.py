@@ -14,6 +14,7 @@ from torchvision.models import resnet34
 from torchvision.models.resnet import BasicBlock, Bottleneck
 
 from models.networks import _DenseBlock, _Transition, RDB, GaussianHistogram, AttentionExtractModule
+from utils import helper
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, padding=1, stride=1):
@@ -292,6 +293,7 @@ class Up(nn.Module):
         self.conv = DoubleConv(current_channels + prev_channels, out_channels)
 
     def forward(self, x1, x2):
+        
         h, w = x2.shape[2], x2.shape[3]
         if not self.global_pool:
             x1 = self.up(x1)
@@ -305,6 +307,8 @@ class Up(nn.Module):
             x1 = F.upsample(x1, size=(h, w), mode='bilinear')
 
         x1 = self.RDB(x1)
+        print("\n x1 SHAPE in up: " + str(x1.shape))
+        print("\n x2 SHAPE in up: " + str(x2.shape))
         x = torch.cat([x2, x1], dim=1)
         return self.conv(x)
 
