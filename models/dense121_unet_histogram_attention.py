@@ -329,7 +329,7 @@ class Dense121UnetHistogramAttention(nn.Module):
                  num_init_features=64, bn_size=4):
         super(Dense121UnetHistogramAttention, self).__init__()
         self.color_pretrain = color_pretrain
-
+        
         # reference local histogram layer
         self.hist_layer_local = HistogramLayerLocal()
 

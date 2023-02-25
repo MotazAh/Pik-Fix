@@ -39,6 +39,9 @@ def train(opt, hypes, use_gpu=True):
     crack_net = helper.create_model(hypes, crack=True)
     model = helper.create_model(hypes)
 
+    print("-- ATT MODEL")
+    helper.print_network(att_model)
+    print("\n\n")
     # helper.print_network(model)
     
     if use_gpu:
