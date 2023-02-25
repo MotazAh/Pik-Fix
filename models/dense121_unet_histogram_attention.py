@@ -413,11 +413,15 @@ class Dense121UnetHistogramAttention(nn.Module):
         :param att_model: pretrained resent34
         """
         # Input size is 256x256
+        print("Input SHAPE: ")
+        print("\t-" + str(x.shape))
         # shallow conv
         feature0 = self.features.relu0(self.features.conv0_0(x))
-        print("feature0 after first conv " + str(feature0.shape))
+        print("feature0 after first conv ")
+        print("\t-" + str(feature0.shape))
         down0 = self.features.pool0(feature0)
-        print("down0 after pool" + str(down0.shape))
+        print("down0 after pool")
+        print("\t-" + str(down0.shape))
 
         # normalize data for attention mask
         normalized_ref = self.normalize_data(ref_gray.repeat(1, 3, 1, 1))
@@ -440,16 +444,16 @@ class Dense121UnetHistogramAttention(nn.Module):
         # dense block 1
         feature1 = self.features.denseblock1(down0)
         print("feature1 SHAPE AFTER DENSEBLOCK: ")
-        print(feature1.shape)
+        print("\t-" + str(feature1.shape))
         down1 = self.features.transition1(feature1)
         print("down1 SHAPE AFTER TRANSITION: ")
-        print(down1.shape)
+        print("\t-" + str(down1.shape))
         down1 = torch.cat([down1, sim_feature[0][1], sim_feature[0][0]], 1)
         print("down1 SHAPE AFTER CONCAT: ")
-        print(down1.shape)
+        print("\t-" + str(down1.shape))
         down1 = self.hf_1(down1)
         print("down1 SHAPE AFTER HF1: ")
-        print(down1.shape)
+        print("\t-" + str(down1.shape))
 
         # dense block 2
         feature2 = self.features.denseblock2(down1)
@@ -457,40 +461,46 @@ class Dense121UnetHistogramAttention(nn.Module):
         down2 = torch.cat([down2, sim_feature[1][1], sim_feature[1][0]], 1)
         down2 = self.hf_2(down2)
         print("down2 SHAPE AFTER HF2: ")
-        print (down2.shape)
+        print("\t-" + str(down2.shape))
         # dense block3
         feature3 = self.features.denseblock3(down2)
         down3 = self.features.transition3(feature3)
         down3 = torch.cat([down3, sim_feature[2][1], sim_feature[2][0]], 1)
         down3 = self.hf_3(down3)
         print("down3 SHAPE AFTER HF3: ")
-        print(down3.shape)
+        print("\t-" + str(down3.shape))
         # dense block 4
         feature4 = self.features.denseblock4(down3)
         down4 = self.features.transition4(feature4)
         down4 = torch.cat([down4, sim_feature[3][1], sim_feature[3][0]], 1)
         down4 = self.hf_4(down4)
         print("down4 SHAPE AFTER HF4: ")
-        print(down4.shape)
+        print("\t-" + str(down4.shape))
 
         # up
         up = self.up0(down4, feature4)
-        print("Shape up0")
-        print(up.shape)
+        print("up0 SHAPE:")
+        print("\t-" + str(up.shape))
+
         up = self.up1(up, feature3)
-        print("Shape up1")
-        print(up.shape)
+        print("up1 SHAPE:")
+        print("\t-" + str(up.shape))
+
         up = self.up2(up, feature2)
-        print("Shape up2")
-        print(up.shape)
+        print("up2 SHAPE:")
+        print("\t-" + str(up.shape))
+
         up = self.up3(up, feature1)
-        print("Shape up3")
-        print(up.shape)
+        print("up3 SHAPE:")
+        print("\t-" + str(up.shape))
+        
         up = self.up4(up, feature0)
-        print("Shape up4")
-        print(up.shape)
+        print("up4 SHAPE:")
+        print("\t-" + str(up.shape))
 
         output = self.conv_final(up)
+        print("output SHAPE:")
+        print("\t-" + str(output.shape))
         results = {'output': output}
         return results
 
