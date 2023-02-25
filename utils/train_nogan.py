@@ -39,12 +39,12 @@ def train(opt, hypes, use_gpu=True):
     crack_net = helper.create_model(hypes, crack=True)
     model = helper.create_model(hypes)
 
-    helper.print_network(model)
+    # helper.print_network(model)
+    
     if use_gpu:
         att_model.cuda()
         crack_net.cuda()
         model.cuda()
-
     # define the loss criterion
     criterion = helper.setup_loss(hypes)
 
@@ -88,6 +88,9 @@ def train(opt, hypes, use_gpu=True):
                                                                    batch_data['input_L'], \
                                                                    batch_data['gt_ab'], batch_data['gt_L'], \
                                                                    batch_data['ref_gray'], batch_data['ref_ab']
+            
+            print(ref_ab.shape)
+            
             if use_gpu:
                 input_batch = input_batch.cuda()
                 input_l = input_l.cuda()
@@ -114,8 +117,12 @@ def train(opt, hypes, use_gpu=True):
                 out_dict = model(input_l, input_batch, ref_ab, ref_gray, att_model)
                 out_train = torch.clamp(out_dict['output'], -1., 1.)
 
-                out_train = lab_to_rgb(input_l, out_train).cuda()
-                target_train = lab_to_rgb(gt_l, gt_ab).cuda()
+                if use_gpu:
+                  out_train = lab_to_rgb(input_l, out_train).cuda()
+                  target_train = lab_to_rgb(gt_l, gt_ab).cuda()
+                else:
+                  out_train = lab_to_rgb(input_l, out_train)
+                  target_train = lab_to_rgb(gt_l, gt_ab)
 
                 psnr_train = loss.batch_psnr(out_train, target_train, 1.)
                 print("[epoch %d][%d/%d], total loss: %.4f, PSNR: %.4f" % (epoch + 1, i + 1, len(loader_train),
@@ -125,7 +132,7 @@ def train(opt, hypes, use_gpu=True):
             step += 1
 
         # log images
-        writer = helper.log_images(input_l, input_batch, ref_ab, ref_gray, writer, model, epoch, att_model)
+        writer = helper.log_images(input_l, input_batch, ref_ab, ref_gray, writer, model, epoch, att_model, use_gpu)
 
         # evaluate model on validation dataset
         if epoch % hypes['train_params']['eval_freq'] == 0:

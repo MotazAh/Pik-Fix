@@ -282,7 +282,7 @@ def load_saved_model(saved_path, model):
 
 
 def log_images(input_l, input_batch, ref_ab, ref_gray, writer, model, epoch,
-               att_model):
+               att_model, use_gpu):
     """
     write the images to tensorboard for visualization
     :param input_data:  input image
@@ -295,8 +295,10 @@ def log_images(input_l, input_batch, ref_ab, ref_gray, writer, model, epoch,
     model.eval()
     output_dict = model(input_l, input_batch, ref_ab, ref_gray, att_model)
     output = torch.clamp(output_dict['output'], -1., 1.)
-
-    output = lab_to_rgb(input_l, output).cuda()
+    if use_gpu:
+      output = lab_to_rgb(input_l, output).cuda()
+    else:
+      output = lab_to_rgb(input_l, output)
 
     im_input = utils.make_grid(input_batch.data, nrow=8, normalize=True,
                                scale_each=True)

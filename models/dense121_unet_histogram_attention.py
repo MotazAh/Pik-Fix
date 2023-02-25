@@ -6,6 +6,7 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import sys
 
 from torchvision import models as torch_models
 from torchvision.models import resnet34
@@ -411,6 +412,7 @@ class Dense121UnetHistogramAttention(nn.Module):
         :param gt: gt_gray
         :param att_model: pretrained resent34
         """
+        # Input size is 256x256
         # shallow conv
         feature0 = self.features.relu0(self.features.conv0_0(x))
         down0 = self.features.pool0(feature0)
@@ -438,24 +440,31 @@ class Dense121UnetHistogramAttention(nn.Module):
         down1 = self.features.transition1(feature1)
         down1 = torch.cat([down1, sim_feature[0][1], sim_feature[0][0]], 1)
         down1 = self.hf_1(down1)
-
+        print("Shape down1: ")
+        print(down1.shape)
         # dense block 2
         feature2 = self.features.denseblock2(down1)
         down2 = self.features.transition2(feature2)
         down2 = torch.cat([down2, sim_feature[1][1], sim_feature[1][0]], 1)
         down2 = self.hf_2(down2)
+        print("Shape down2: ")
+        print(down2.shape)
 
         # dense block3
         feature3 = self.features.denseblock3(down2)
         down3 = self.features.transition3(feature3)
         down3 = torch.cat([down3, sim_feature[2][1], sim_feature[2][0]], 1)
         down3 = self.hf_3(down3)
+        print("Shape down3: ")
+        print(down3.shape)
 
         # dense block 4
         feature4 = self.features.denseblock4(down3)
         down4 = self.features.transition4(feature4)
         down4 = torch.cat([down4, sim_feature[3][1], sim_feature[3][0]], 1)
         down4 = self.hf_4(down4)
+        print("Shape down4: ")
+        print(down4.shape)
 
         # up
         up = self.up0(down4, feature4)

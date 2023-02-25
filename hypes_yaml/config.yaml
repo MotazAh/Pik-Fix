@@ -31,7 +31,7 @@ train_params:
   display_freq: 5
   eval_freq: 1
   writer_freq: 5
-  use_gpu: true
+  use_gpu: false
   gpu_id: 0
   ref_json: false # whether load reference image from json file
 arch:
