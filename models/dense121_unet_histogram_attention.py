@@ -439,35 +439,38 @@ class Dense121UnetHistogramAttention(nn.Module):
 
         # dense block 1
         feature1 = self.features.denseblock1(down0)
-        print("feature1 shape after denseblock: " + str(feature1.shape))
+        print("feature1 SHAPE AFTER DENSEBLOCK: ")
+        print(feature1.shape)
         down1 = self.features.transition1(feature1)
-        print("down1 shape after transition: " + str(down1.shape))
+        print("down1 SHAPE AFTER TRANSITION: ")
+        print(down1.shape)
         down1 = torch.cat([down1, sim_feature[0][1], sim_feature[0][0]], 1)
-        print("down1 shape after concat: " + str(down1.shape))
+        print("down1 SHAPE AFTER CONCAT: ")
+        print(down1.shape)
         down1 = self.hf_1(down1)
-        print("down1 shape after hf: " + str(down1.shape))
+        print("down1 SHAPE AFTER HF1: ")
+        print(down1.shape)
+
         # dense block 2
         feature2 = self.features.denseblock2(down1)
         down2 = self.features.transition2(feature2)
         down2 = torch.cat([down2, sim_feature[1][1], sim_feature[1][0]], 1)
         down2 = self.hf_2(down2)
-        print("Shape down2: ")
-        print(down2.shape)
-
+        print("down2 SHAPE AFTER HF2: ")
+        print (down2.shape)
         # dense block3
         feature3 = self.features.denseblock3(down2)
         down3 = self.features.transition3(feature3)
         down3 = torch.cat([down3, sim_feature[2][1], sim_feature[2][0]], 1)
         down3 = self.hf_3(down3)
-        print("Shape down3: ")
+        print("down3 SHAPE AFTER HF3: ")
         print(down3.shape)
-
         # dense block 4
         feature4 = self.features.denseblock4(down3)
         down4 = self.features.transition4(feature4)
         down4 = torch.cat([down4, sim_feature[3][1], sim_feature[3][0]], 1)
         down4 = self.hf_4(down4)
-        print("Shape down4: ")
+        print("down4 SHAPE AFTER HF4: ")
         print(down4.shape)
 
         # up
