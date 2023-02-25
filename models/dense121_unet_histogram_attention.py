@@ -468,10 +468,20 @@ class Dense121UnetHistogramAttention(nn.Module):
 
         # up
         up = self.up0(down4, feature4)
+        print("Shape up0")
+        print(up.shape)
         up = self.up1(up, feature3)
+        print("Shape up1")
+        print(up.shape)
         up = self.up2(up, feature2)
+        print("Shape up2")
+        print(up.shape)
         up = self.up3(up, feature1)
+        print("Shape up3")
+        print(up.shape)
         up = self.up4(up, feature0)
+        print("Shape up4")
+        print(up.shape)
 
         output = self.conv_final(up)
         results = {'output': output}
