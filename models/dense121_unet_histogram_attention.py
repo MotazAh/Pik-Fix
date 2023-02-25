@@ -415,7 +415,9 @@ class Dense121UnetHistogramAttention(nn.Module):
         # Input size is 256x256
         # shallow conv
         feature0 = self.features.relu0(self.features.conv0_0(x))
+        print("feature0 after first conv " + str(feature0.shape))
         down0 = self.features.pool0(feature0)
+        print("down0 after pool" + str(down0.shape))
 
         # normalize data for attention mask
         normalized_ref = self.normalize_data(ref_gray.repeat(1, 3, 1, 1))
@@ -437,7 +439,7 @@ class Dense121UnetHistogramAttention(nn.Module):
 
         # dense block 1
         feature1 = self.features.denseblock1(down0)
-        print("down1 shape after denseblock: " + str(down1.shape))
+        print("feature1 shape after denseblock: " + str(feature1.shape))
         down1 = self.features.transition1(feature1)
         print("down1 shape after transition: " + str(down1.shape))
         down1 = torch.cat([down1, sim_feature[0][1], sim_feature[0][0]], 1)
