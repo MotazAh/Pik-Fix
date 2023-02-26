@@ -331,7 +331,9 @@ class HistFusionModule(nn.Module):
         self.RDB = RDB(out_features, 4, 32)
 
     def forward(self, feature):
+        print("\n-- FUSION MODULE --")
         feature = self.conv(feature)
+        print("FEATUE CONV")
         feature = self.RDB(feature)
 
         return feature

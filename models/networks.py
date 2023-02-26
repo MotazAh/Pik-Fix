@@ -305,18 +305,27 @@ class GaussianHistogram(nn.Module):
         self.centers = nn.Parameter(float(min) + self.delta * (torch.arange(bins).float() + 0.5), requires_grad=False)
 
     def forward(self, x, attention_mask=None):
+        print("\n -- GAUSSIAN HISTOGRAM --")
         device = x.device
+        print("Device: " + str(device))
         self.sigma = self.sigma.to(device)
         self.centers = self.centers.to(device)
 
+        print("X INPUT = " + str(x.shape))
         x = torch.unsqueeze(x, dim=1) - torch.unsqueeze(self.centers, 1)
+        print("X UNSQUEEZE = " + str(x.shape))
         hist_dist = torch.exp(-0.5 * (x / self.sigma) ** 2) / (self.sigma * np.sqrt(np.pi * 2)) * self.delta
+        print("HIST DIST = " + str(hist_dist.shape))
         # multiply with attention mask
         if not type(attention_mask) == type(None):
             hist_dist *= torch.unsqueeze(attention_mask, 1)
 
         hist = hist_dist.sum(dim=-1)
+        print("HIST SUM = " + str(hist.shape))
+        print("TORCH SUM = " + str(torch.sum(hist, dim=1, keepdim=True)))
         hist = hist / torch.sum(hist, dim=1, keepdim=True)
+        print("HIST DIV SUM = " + str(hist.shape))
+        print("\n")
 
         return hist, hist_dist
 
@@ -336,6 +345,14 @@ class AttentionExtractModule(ResNet):
         g1 = self.layer2(g0)
         g2 = self.layer3(g1)
         g3 = self.layer4(g2)
+
+        gfinal = [g.pow(2).mean(1) for g in (g0, g1, g2, g3)], [g0, g1, g2, g3]
+        print("\n")
+        #print("\ngpow SHAPE = " + str(gfinal.shape))
+        print("g0 shape = " + str(gfinal[1][0].shape))
+        print("g0 shape = " + str(gfinal[1][1].shape))
+        print("g0 shape = " + str(gfinal[1][2].shape))
+        print("g0 shape = " + str(gfinal[1][3].shape))
 
         return [g.pow(2).mean(1) for g in (g0, g1, g2, g3)], [g0, g1, g2, g3]
 
