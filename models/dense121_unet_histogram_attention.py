@@ -173,44 +173,71 @@ class WarpNet(nn.Module):
         print ("\n")
         
         # pairwise cosine similarity
+        print("-- PAIRWISE COSINE SIMILARITY --")
         theta = self.theta(A_features).view(batch_size, self.inter_channels, -1)  # 2*256*(feature_height*feature_width)
+        print("THETA VIEW = " + str(theta.shape))
         theta = theta - theta.mean(dim=-1, keepdim=True)  # center the feature
+        print("THETA MEAN = " + str(theta.shape))
         theta_norm = torch.norm(theta, 2, 1, keepdim=True) + sys.float_info.epsilon
+        print("THETA NORM = " + str(theta_norm.shape))
         theta = torch.div(theta, theta_norm)
+        print("THETA DIV = " + str(theta.shape))
         theta_permute = theta.permute(0, 2, 1)  # 2*(feature_height*feature_width)*256
+        print("THETA PERMUTE = " + str(theta_permute.shape))
         phi = self.phi(B_features).view(batch_size, self.inter_channels, -1)  # 2*256*(feature_height*feature_width)
+        print("PHI VIEW = " + str(phi.shape))
         phi = phi - phi.mean(dim=-1, keepdim=True)  # center the feature
+        print("PHI MEAN = " + str(phi.shape))
         phi_norm = torch.norm(phi, 2, 1, keepdim=True) + sys.float_info.epsilon
+        print("PHI NORM = " + str(phi_norm.shape))
         phi = torch.div(phi, phi_norm)
+        print("PHI DIV = " + str (phi.shape))
         f = torch.matmul(theta_permute, phi)  # 2*(feature_height*feature_width)*(feature_height*feature_width)
+        print("f = " + str(f.shape))
+        
         if detach_flag:
             f = f.detach()
 
+        print("\n")
         f_similarity = f.unsqueeze_(dim=1)
+        print("f_similarity UNSQUEEZE= " + str(f.shape))
         similarity_map = torch.max(f_similarity, -1, keepdim=True)[0]
+        print("similarity_map MAX = " + str(similarity_map.shape))
         similarity_map = similarity_map.view(batch_size, 1, A_feature2_1.shape[2],  A_feature2_1.shape[3])
-        
-        print("SIMILARITY MAP:")
-        print("\t-" + str(similarity_map.shape))
-        print ("\n")
+        print("similarity_map VIEW = " + str(similarity_map.shape))
+        print("\n")
         # f can be negative
         f_WTA = f
+        
         f_WTA = f_WTA / temperature
+        print("f_WTA / TEMP = " + str(f_WTA.shape))
+        print("f_WTA SQUEEZE = " + str(f_WTA.squeeze_().shape))
         f_div_C = F.softmax(f_WTA.squeeze_(), dim=-1)  # 2*1936*1936;
-
+        print("f_div_C = " + str(f_div_C.shape))
         # downsample the reference histogram
         feature_height, feature_width = B_hist.shape[2], B_hist.shape[3]
         B_hist = B_hist.view(batch_size, 512, -1)
+        print("BHIST VIEW: " + str(B_hist.shape))
         B_hist = B_hist.permute(0, 2, 1)
+        print("BHIST PERMUTE: " + str(B_hist.shape))
         y_hist = torch.matmul(f_div_C, B_hist)
+        print("Y_HIST MATMUL: " + str(y_hist.shape))
         y_hist = y_hist.permute(0, 2, 1).contiguous()
+        print("Y_HIST PERMUTE: " + str(y_hist.shape))
         y_hist_1 = y_hist.view(batch_size, 512, feature_height, feature_width)
-
+        
         # upsample, downspale the wrapped histogram feature for multi-level fusion
         upsample = nn.Upsample(scale_factor=2)
         y_hist_0 = upsample(y_hist_1)
         y_hist_2 = F.avg_pool2d(y_hist_1, 2)
         y_hist_3 = F.avg_pool2d(y_hist_1, 4)
+
+        print("\n")
+        print("Y_HIST_0: " + str(y_hist_0.shape))
+        print("Y_HIST_1: " + str(y_hist_1.shape))
+        print("Y_HIST_2: " + str(y_hist_2.shape))
+        print("Y_HIST_3: " + str(y_hist_3.shape))
+        print("\n")
 
         # do the same thing to similarity map
         similarity_map_0 = upsample(similarity_map)
