@@ -217,6 +217,11 @@ class WarpNet(nn.Module):
         similarity_map_1 = similarity_map
         similarity_map_2 = F.avg_pool2d(similarity_map_1, 2)
         similarity_map_3 = F.avg_pool2d(similarity_map_1, 4)
+        print("Similarity map 0: " + str(similarity_map_0.shape))
+        print("Similarity map 1: " + str(similarity_map_1.shape))
+        print("Similarity map 2: " + str(similarity_map_2.shape))
+        print("Similarity map 3: " + str(similarity_map_3.shape))
+        print("\n")
 
         return [(y_hist_0, similarity_map_0), (y_hist_1, similarity_map_1),
                 (y_hist_2, similarity_map_2), (y_hist_3, similarity_map_3)]
@@ -228,6 +233,9 @@ class HistogramLayerLocal(nn.Module):
 
     def forward(self, x, ref, attention_mask=None):
         channels = ref.shape[1]
+        #print("\n")
+        #print("NUMBER CHANNELS = " + str(channels))
+        #print("LEN X SHAPE = " + str(len(x.shape)))
         if len(x.shape) == 3:
             ref = F.interpolate(ref,
                                 size=(x.shape[1], x.shape[2]),
@@ -247,15 +255,21 @@ class HistogramLayerLocal(nn.Module):
                                                size=(x.shape[2], x.shape[3]),
                                                mode='bicubic')
                 attention_mask = torch.flatten(attention_mask, start_dim=1, end_dim=-1)
-
+        #print("Ref after interpolation:")
+        #print("\t-" + str(ref.shape))
+        #print("\n")
         layers = []
         for i in range(channels):
             input_channel = torch.flatten(ref[:, i, :, :], start_dim=1, end_dim=-1)
+            #print("Shape after flatten = " + str(input_channel.shape))
             input_hist, hist_dist = self.hist_layer(input_channel, attention_mask)
+            #print("HIST DIST SHAPE = " + str(hist_dist.shape))
             hist_dist = hist_dist.view(-1, 256, ref.shape[2], ref.shape[3])
+            #print("HIST DIST SHAPE VIEW = " + str(hist_dist.shape))
             layers.append(hist_dist)
-
-        return torch.cat(layers, 1)
+        final_layers = torch.cat(layers, 1)
+        #print("Final LAYERS SHAPE = " + str(final_layers.shape))
+        return final_layers
 
 
 class DoubleConv(nn.Module):
@@ -441,6 +455,10 @@ class Dense121UnetHistogramAttention(nn.Module):
         # Input size is 256x256
         print("Input SHAPE: ")
         print("\t-" + str(x.shape))
+        print("Ref SHAPE:")
+        print("\t-" + str(ref.shape))
+        print("\n")
+
         # shallow conv
         feature0 = self.features.relu0(self.features.conv0_0(x))
         print("feature0 after first conv ")
